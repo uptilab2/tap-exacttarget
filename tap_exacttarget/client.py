@@ -37,7 +37,6 @@ def get_auth_stub(config):
         'clientid': config['client_id'],
         'clientsecret': config['client_secret']
         }
-
     if config.get('tenant_subdomain'):
         # For S10+ accounts: https://developer.salesforce.com/docs/atlas.en-us.noversion.mc-apis.meta/mc-apis/your-subdomain-tenant-specific-endpoints.htm
 
@@ -68,6 +67,7 @@ def get_auth_stub(config):
     try:
         LOGGER.info('Trying to authenticate using V2 endpoint')
         params['useOAuth2Authentication'] = "True"
+        params['applicationType'] = 'web'
         params['authenticationurl'] = ('https://{}.auth.marketingcloudapis.com'
                                        .format(config['tenant_subdomain']))
         LOGGER.info("Authentication URL is: %s", params['authenticationurl'])
