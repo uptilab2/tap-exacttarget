@@ -105,3 +105,6 @@ ENV/
 config.json
 catalog.json
 .vscode
+
+# OSX
+.DS_Store

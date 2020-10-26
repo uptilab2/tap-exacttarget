@@ -1,10 +1,21 @@
 import FuelSDK
 import singer
+import json
+import time
+import requests
 
 from suds.transport.https import HttpAuthenticated
 from tap_exacttarget.fuel_overrides import tap_exacttarget__getMoreResults
 
 LOGGER = singer.get_logger()
+
+
+class ETClient(FuelSDK.ET_Client):
+
+    def __init__(self, get_server_wsdl = False, debug = False, params = None, tokenResponse=None, refresh_token=None):
+        # We handle web app oauth2 authentification in our application, inject refresh token to avoid auth SDK method
+        self.refreshKey = refresh_token
+        super().__init__(get_server_wsdl=get_server_wsdl, debug=debug, params=params, tokenResponse=tokenResponse)
 
 
 def _get_response_items(response):
@@ -67,11 +78,10 @@ def get_auth_stub(config):
     try:
         LOGGER.info('Trying to authenticate using V2 endpoint')
         params['useOAuth2Authentication'] = "True"
-        params['applicationType'] = 'web'
         params['authenticationurl'] = ('https://{}.auth.marketingcloudapis.com'
                                        .format(config['tenant_subdomain']))
         LOGGER.info("Authentication URL is: %s", params['authenticationurl'])
-        auth_stub = FuelSDK.ET_Client(params=params)
+        auth_stub = ETClient(params=params, refresh_token = config.get('refresh_token'))
         transport = HttpAuthenticated(timeout=int(config.get('request_timeout', 900)))
         auth_stub.soap_client.set_options(
             transport=transport)
@@ -113,11 +123,6 @@ def request(name, selector, auth_stub, search_filter=None, props=None, batch_siz
 
     if search_filter is not None:
         cursor.search_filter = search_filter
-
-        LOGGER.info(
-            "Making RETRIEVE call to '{}' endpoint with filters '{}'."
-            .format(name, search_filter))
-
     else:
         LOGGER.info(
             "Making RETRIEVE call to '{}' endpoint with no filters."
