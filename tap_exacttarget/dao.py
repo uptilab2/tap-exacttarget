@@ -42,7 +42,6 @@ class DataAccessObject():
 
     def filter_keys_and_parse(self, obj):
         to_return = sudsobj_to_dict(obj)
-        LOGGER.info(to_return)
         return self.parse_object(to_return)
 
     def get_catalog_keys(self):
