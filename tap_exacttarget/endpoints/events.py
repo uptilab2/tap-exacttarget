@@ -102,6 +102,8 @@ class EventDataAccessObject(DataAccessObject):
                                             event.get('EventDate')))
                         continue
 
+                    if self.config.get('remove_personally_identifiable_data', False):
+                        event = {property: value for property, value in event.items() if property not in self.sensitive_properties}
                     singer.write_records(table, [event])
 
                 self.state = incorporate(self.state,

@@ -130,7 +130,8 @@ class ListSubscriberDataAccessObject(DataAccessObject):
                             table,
                             'ModifiedDate',
                             list_subscriber.get('ModifiedDate'))
-
+                    if self.config.get('remove_personally_identifiable_data', False):
+                        list_subscriber = {property: value for property, value in list_subscriber.items() if property not in self.sensitive_properties}
                     singer.write_records(table, [list_subscriber])
 
                 if self.replicate_subscriber:

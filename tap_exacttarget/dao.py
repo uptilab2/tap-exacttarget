@@ -14,6 +14,8 @@ def _get_catalog_schema(catalog):
 
 class DataAccessObject():
 
+    sensitive_properties = ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')
+
     def __init__(self, config, state, auth_stub, catalog):
         self.config = config.copy()
         self.state = state.copy()
@@ -50,9 +52,6 @@ class DataAccessObject():
 
     def parse_object(self, obj):
         catalog_keys = self.get_catalog_keys()
-        if self.config.get('remove_personally_identifiable_data', False):
-            catalog_keys = {property for property in self.get_catalog_keys() if property not in ('SubscriberKey')}
-
         return project(obj, catalog_keys)
 
     def write_schema(self):

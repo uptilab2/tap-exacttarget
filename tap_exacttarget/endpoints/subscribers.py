@@ -155,5 +155,5 @@ class SubscriberDataAccessObject(DataAccessObject):
         for subscriber in stream:
             subscriber = self.filter_keys_and_parse(subscriber)
             if self.config.get('remove_personally_identifiable_data', False):
-                subscriber = {property: value for property, value in subscriber.items() if property not in ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')}
+                subscriber = {property: value for property, value in subscriber.items() if property not in self.sensitive_properties}
             singer.write_records(table, [subscriber])
