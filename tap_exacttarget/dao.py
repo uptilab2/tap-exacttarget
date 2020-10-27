@@ -42,7 +42,7 @@ class DataAccessObject():
 
     def filter_keys_and_parse(self, obj):
         to_return = sudsobj_to_dict(obj)
-
+        LOGGER.info(to_return)
         return self.parse_object(to_return)
 
     def get_catalog_keys(self):
@@ -50,7 +50,10 @@ class DataAccessObject():
             self.catalog.get('schema', {}).get('properties', {}).keys())
 
     def parse_object(self, obj):
-        return project(obj, self.get_catalog_keys())
+        catalog_keys = self.get_catalog_keys()
+        if self.config.get('remove_sensitive_data', False):
+            catalog_keys = {property for property in self.get_catalog_keys() if property not in ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')}
+        return project(obj, catalog_keys)
 
     def write_schema(self):
         singer.write_schema(
