@@ -50,7 +50,7 @@ class DataAccessObject():
 
     def parse_object(self, obj):
         catalog_keys = self.get_catalog_keys()
-        if self.config.get('remove_sensitive_data', False):
+        if self.config.get('remove_personally_identifiable_data', False):
             catalog_keys = {property for property in self.get_catalog_keys() if property not in ('SubscriberKey')}
 
         return project(obj, catalog_keys)
