@@ -119,6 +119,7 @@ class SubscriberDataAccessObject(DataAccessObject):
         if to_return.get('PartnerProperties') is None:
             to_return['PartnerProperties'] = []
 
+
         return super(SubscriberDataAccessObject, self).parse_object(obj)
 
     def sync_data(self):
@@ -153,5 +154,6 @@ class SubscriberDataAccessObject(DataAccessObject):
 
         for subscriber in stream:
             subscriber = self.filter_keys_and_parse(subscriber)
-
+            if self.config.get('remove_sensitive_data', False):
+                subscriber = {property: value for property, value in subscriber.items() if property not in ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')}
             singer.write_records(table, [subscriber])

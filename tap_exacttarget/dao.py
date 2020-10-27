@@ -51,7 +51,8 @@ class DataAccessObject():
     def parse_object(self, obj):
         catalog_keys = self.get_catalog_keys()
         if self.config.get('remove_sensitive_data', False):
-            catalog_keys = {property for property in self.get_catalog_keys() if property not in ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')}
+            catalog_keys = {property for property in self.get_catalog_keys() if property not in ('SubscriberKey')}
+
         return project(obj, catalog_keys)
 
     def write_schema(self):
