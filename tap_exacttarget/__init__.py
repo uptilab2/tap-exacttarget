@@ -18,7 +18,9 @@ from tap_exacttarget.endpoints.content_areas \
 from tap_exacttarget.endpoints.data_extensions \
     import DataExtensionDataAccessObject
 from tap_exacttarget.endpoints.emails import EmailDataAccessObject
-from tap_exacttarget.endpoints.events import EventDataAccessObject
+from tap_exacttarget.endpoints.events \
+    import ClickEventDataAccessObject, SentEventDataAccessObject, OpenEventDataAccessObject, \
+        BounceEventDataAccessObject, UnsubEventDataAccessObject
 from tap_exacttarget.endpoints.folders import FolderDataAccessObject
 from tap_exacttarget.endpoints.lists import ListDataAccessObject
 from tap_exacttarget.endpoints.list_sends import ListSendDataAccessObject
@@ -41,7 +43,11 @@ AVAILABLE_STREAM_ACCESSORS = [
     ContentAreaDataAccessObject,
     DataExtensionDataAccessObject,
     EmailDataAccessObject,
-    EventDataAccessObject,
+    ClickEventDataAccessObject, 
+    SentEventDataAccessObject,
+    OpenEventDataAccessObject,
+    BounceEventDataAccessObject,
+    UnsubEventDataAccessObject,
     FolderDataAccessObject,
     ListDataAccessObject,
     ListSendDataAccessObject,
@@ -62,6 +68,10 @@ def do_discover(args):
     catalog = []
 
     for available_stream_accessor in AVAILABLE_STREAM_ACCESSORS:
+        # option to sync data extension
+        if not config.get('discover_data_extension', False) and \
+            available_stream_accessor is DataExtensionDataAccessObject:
+            continue
         stream_accessor = available_stream_accessor(
             config, state, auth_stub, None)
 
