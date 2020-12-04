@@ -124,7 +124,7 @@ class SendDataAccessObject(DataAccessObject):
         for send in stream:
             send = self.filter_keys_and_parse(send)
             list_sends_dao.sync_data_by_sendID(send.get('ID'))
-            if retrieve_all_since < send.get('SentDate') and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
+            if retrieve_all_since.strftime('%Y-%m-%d') < send.get('SentDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
                 self.state = incorporate(self.state,
                                         table,
                                         'SentDate',
