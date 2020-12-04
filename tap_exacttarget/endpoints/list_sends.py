@@ -13,6 +13,7 @@ LOGGER = singer.get_logger()
 
 
 class ListSendDataAccessObject(DataAccessObject):
+    REPLICATION_METHOD = "FULL_TABLE"
     SCHEMA = with_properties({
         'CreatedDate': CREATED_DATE_FIELD,
         'CustomerKey': CUSTOMER_KEY_FIELD,
