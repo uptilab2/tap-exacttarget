@@ -124,15 +124,12 @@ class SendDataAccessObject(DataAccessObject):
         for send in stream:
             send = self.filter_keys_and_parse(send)
             list_sends_dao.sync_data_by_sendID(send.get('ID'))
-            self.state = incorporate(self.state,
-                                     table,
-                                     'SentDate',
-                                     send.get('SentDate'))
-            self.state = incorporate(self.state,
-                                     'ListSend',
-                                     'SentDate',
-                                     send.get('SentDate'))
+            if retrieve_all_since < send.get('SentDate') and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
+                self.state = incorporate(self.state,
+                                        table,
+                                        'SentDate',
+                                        send.get('SentDate'))
 
-            singer.write_records(table, [send])
+                singer.write_records(table, [send])
 
         save_state(self.state)
