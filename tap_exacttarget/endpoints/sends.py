@@ -1,5 +1,6 @@
 import FuelSDK
 import singer
+import datetime
 
 from tap_exacttarget.client import request
 from tap_exacttarget.dao import DataAccessObject
@@ -13,6 +14,7 @@ LOGGER = singer.get_logger()
 
 
 class SendDataAccessObject(DataAccessObject):
+    REPLICATION_METHOD = "FULL_TABLE"
     SCHEMA = with_properties({
         'CreatedDate': CREATED_DATE_FIELD,
         'EmailID': {
@@ -101,6 +103,8 @@ class SendDataAccessObject(DataAccessObject):
         )
         search_filter = None
         retrieve_all_since = get_last_record_value_for_table(self.state, table, self.config.get('start_date'))
+        if self.REPLICATION_METHOD == "FULL_TABLE":
+            retrieve_all_since = datetime.datetime.strptime(self.config.get('start_date'), "%Y-%m-%dT%H:%M:%SZ")
 
         if retrieve_all_since is not None:
             search_filter = {
@@ -120,15 +124,12 @@ class SendDataAccessObject(DataAccessObject):
         for send in stream:
             send = self.filter_keys_and_parse(send)
             list_sends_dao.sync_data_by_sendID(send.get('ID'))
-            self.state = incorporate(self.state,
-                                     table,
-                                     'SentDate',
-                                     send.get('SentDate'))
-            self.state = incorporate(self.state,
-                                     'ListSend',
-                                     'SentDate',
-                                     send.get('SentDate'))
+            if retrieve_all_since.strftime('%Y-%m-%d') < send.get('SentDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
+                self.state = incorporate(self.state,
+                                        table,
+                                        'SentDate',
+                                        send.get('SentDate'))
 
-            singer.write_records(table, [send])
+                singer.write_records(table, [send])
 
         save_state(self.state)

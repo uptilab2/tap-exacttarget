@@ -14,7 +14,7 @@ def _get_catalog_schema(catalog):
 SENSITIVE_PROPERTIES = ('EmailAddress', 'SubscriberKey', 'Addresses', 'Attributes')
 
 class DataAccessObject():
-
+    REPLICATION_METHOD = "INCREMENTAL"
     def __init__(self, config, state, auth_stub, catalog):
         self.config = config.copy()
         self.state = state.copy()
@@ -38,6 +38,7 @@ class DataAccessObject():
             'stream': cls.TABLE,
             'key_properties': cls.KEY_PROPERTIES,
             'schema': cls.SCHEMA,
+            'replication_method': cls.REPLICATION_METHOD,
             'metadata': metadata.to_list(mdata)
         }]
 
