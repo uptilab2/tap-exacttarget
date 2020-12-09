@@ -5,6 +5,7 @@ import datetime
 from tap_exacttarget.client import request
 from tap_exacttarget.dao import DataAccessObject
 from tap_exacttarget.endpoints.list_sends import ListSendDataAccessObject
+from tap_exacttarget.endpoints.link_sends import LinkSendDataAccessObject
 from tap_exacttarget.schemas import ID_FIELD, CUSTOM_PROPERTY_LIST, \
     CREATED_DATE_FIELD, MODIFIED_DATE_FIELD, with_properties
 from tap_exacttarget.state import incorporate, save_state, \
@@ -101,6 +102,12 @@ class SendDataAccessObject(DataAccessObject):
             self.auth_stub,
             self.listsend_catalog
         )
+        link_sends_dao = LinkSendDataAccessObject(
+            self.config,
+            self.state,
+            self.auth_stub,
+            self.linksend_catalog
+        )
         search_filter = None
         retrieve_all_since = get_last_record_value_for_table(self.state, table, self.config.get('start_date'))
         if self.REPLICATION_METHOD == "FULL_TABLE":
@@ -121,9 +128,15 @@ class SendDataAccessObject(DataAccessObject):
         if self.replicate_listsend:
             list_sends_dao.write_schema()
 
+        if self.replicate_linksend:
+            link_sends_dao.write_schema()
+
         for send in stream:
             send = self.filter_keys_and_parse(send)
-            list_sends_dao.sync_data_by_sendID(send.get('ID'))
+            if self.replicate_listsend:
+                list_sends_dao.sync_data_by_sendID(send.get('ID'))
+            if self.replicate_linksend:
+                link_sends_dao.sync_data_by_sendID(send.get('ID'))
             if retrieve_all_since.strftime('%Y-%m-%d') < send.get('CreatedDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
                 self.state = incorporate(self.state,
                                         table,

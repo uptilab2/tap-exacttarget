@@ -24,6 +24,7 @@ from tap_exacttarget.endpoints.events \
 from tap_exacttarget.endpoints.folders import FolderDataAccessObject
 from tap_exacttarget.endpoints.lists import ListDataAccessObject
 from tap_exacttarget.endpoints.list_sends import ListSendDataAccessObject
+from tap_exacttarget.endpoints.link_sends import LinkSendDataAccessObject
 from tap_exacttarget.endpoints.list_subscribers \
     import ListSubscriberDataAccessObject
 from tap_exacttarget.endpoints.sends import SendDataAccessObject
@@ -51,6 +52,7 @@ AVAILABLE_STREAM_ACCESSORS = [
     FolderDataAccessObject,
     ListDataAccessObject,
     ListSendDataAccessObject,
+    LinkSendDataAccessObject,
     ListSubscriberDataAccessObject,
     SendDataAccessObject,
     SubscriberDataAccessObject,
@@ -101,6 +103,8 @@ def do_sync(args):
     subscriber_catalog = None
     listsend_selected = False
     listsend_catalog = None
+    linksend_selected = False
+    linksend_catalog = None
 
     list_subscriber_selected = False
     send_selected = False
@@ -124,6 +128,13 @@ def do_sync(args):
             listsend_selected = True
             listsend_catalog = stream_catalog
             LOGGER.info("'list send' selected, will replicate via "
+                        "'send'")
+            continue
+
+        if LinkSendDataAccessObject.matches_catalog(stream_catalog):
+            linksend_selected = True
+            linksend_catalog = stream_catalog
+            LOGGER.info("'link send' selected, will replicate via "
                         "'send'")
             continue
 
@@ -151,6 +162,12 @@ def do_sync(args):
                      '`send`. Please select `send` '
                      'and try again.')
         exit(1)
+    
+    if linksend_selected and not send_selected:
+        LOGGER.fatal('Cannot replicate `list_send` without '
+                     '`send`. Please select `send` '
+                     'and try again.')
+        exit(1)
 
     for stream_accessor in stream_accessors:
         if isinstance(stream_accessor, ListSubscriberDataAccessObject) and \
@@ -159,9 +176,11 @@ def do_sync(args):
             stream_accessor.subscriber_catalog = subscriber_catalog
 
         if isinstance(stream_accessor, SendDataAccessObject) and \
-           listsend_selected:
-            stream_accessor.replicate_listsend = True
+           (listsend_selected or linksend_selected):
+            stream_accessor.replicate_listsend = bool(listsend_selected)
+            stream_accessor.replicate_linksend = bool(linksend_selected)
             stream_accessor.listsend_catalog = listsend_catalog
+            stream_accessor.linksend_catalog = linksend_catalog
 
         try:
             stream_accessor.state = state
