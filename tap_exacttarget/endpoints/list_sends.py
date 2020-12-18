@@ -14,6 +14,16 @@ LOGGER = singer.get_logger()
 
 class ListSendDataAccessObject(DataAccessObject):
     REPLICATION_METHOD = "FULL_TABLE"
+    def __init__(self, config, state ,auth_stub, catalog):
+        self.config = config.copy()
+        self.state = state.copy()
+        self.catalog = catalog
+        self.auth_stub = auth_stub
+        self.REPLICATION_METHOD = self.config['incremental_mode_send'] if 'incremental_mode_send' in self.config \
+        and self.config['incremental_mode_send'] else "FULL_TABLE"
+        super().__init__(config, state, auth_stub, catalog)
+
+
     SCHEMA = with_properties({
         'CreatedDate': CREATED_DATE_FIELD,
         'CustomerKey': CUSTOMER_KEY_FIELD,
