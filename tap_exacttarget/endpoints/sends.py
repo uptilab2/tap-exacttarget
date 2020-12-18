@@ -138,7 +138,7 @@ class SendDataAccessObject(DataAccessObject):
                 list_sends_dao.sync_data_by_sendID(send.get('ID'))
             if self.replicate_linksend:
                 link_sends_dao.sync_data_by_sendID(send.get('ID'))
-            if retrieve_all_since[:10] < send.get('CreatedDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
+            if retrieve_all_since.strftime('%Y-%m-%d') < send.get('CreatedDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
                 self.state = incorporate(self.state,
                                         table,
                                         'CreatedDate',
