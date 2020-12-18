@@ -21,7 +21,7 @@ class SendDataAccessObject(DataAccessObject):
         self.state = state.copy()
         self.catalog = catalog
         self.auth_stub = auth_stub
-        self.REPLICATION_METHOD = self.config['incremental_mode_send'] if 'incremental_mode_send' in self.config \
+        self.REPLICATION_METHOD = 'INCREMENTAL' if 'incremental_mode_send' in self.config \
         and self.config['incremental_mode_send'] else "FULL_TABLE"
         super().__init__(config, state, auth_stub, catalog)
 
@@ -146,6 +146,9 @@ class SendDataAccessObject(DataAccessObject):
                 list_sends_dao.sync_data_by_sendID(send.get('ID'))
             if self.replicate_linksend:
                 link_sends_dao.sync_data_by_sendID(send.get('ID'))
+            LOGGER.info(retrieve_all_since)
+            LOGGER.info(send.get('CreatedDate'))
+            LOGGER.info(retrieve_all_since[:10] < send.get('CreatedDate')[:10])
             if retrieve_all_since[:10] < send.get('CreatedDate')[:10] and self.REPLICATION_METHOD == 'INCREMENTAL' or self.REPLICATION_METHOD == 'FULL_TABLE':
                 self.state = incorporate(self.state,
                                         table,
