@@ -1,5 +1,6 @@
 import FuelSDK
 import singer
+import datetime from datetime
 
 from tap_exacttarget.client import request
 from tap_exacttarget.dao import DataAccessObject
@@ -101,6 +102,10 @@ class ListSendDataAccessObject(DataAccessObject):
             'description': ('Indicates the number of unsubscribe events '
                             'associated with a send.'),
         },
+        'RetrieveDate': {
+            'type': ['null', 'string'],
+            'description': ('Indicates the date on which the data was retrieved.'),
+        }
     })
 
     TABLE = 'list_send'
@@ -167,5 +172,6 @@ class ListSendDataAccessObject(DataAccessObject):
             self.__class__.TABLE, FuelSDK.ET_ListSend, self.auth_stub, _filter)
 
         for list_send in stream:
+            list_send['RetrieveDate'] = datetime.now()
             list_send = self.filter_keys_and_parse(list_send)
             singer.write_records(table, [list_send])
