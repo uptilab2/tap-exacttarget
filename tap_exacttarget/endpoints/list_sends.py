@@ -1,6 +1,6 @@
 import FuelSDK
 import singer
-import datetime from datetime
+from datetime import datetime
 
 from tap_exacttarget.client import request
 from tap_exacttarget.dao import DataAccessObject
