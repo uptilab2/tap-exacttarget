@@ -1,5 +1,6 @@
 import FuelSDK
 import singer
+from datetime import datetime
 
 from tap_exacttarget.client import request
 from tap_exacttarget.dao import DataAccessObject
@@ -14,6 +15,16 @@ LOGGER = singer.get_logger()
 
 class ListSendDataAccessObject(DataAccessObject):
     REPLICATION_METHOD = "FULL_TABLE"
+    def __init__(self, config, state ,auth_stub, catalog):
+        self.config = config.copy()
+        self.state = state.copy()
+        self.catalog = catalog
+        self.auth_stub = auth_stub
+        self.REPLICATION_METHOD = 'INCREMENTAL' if 'incremental_mode_send' in self.config \
+        and self.config['incremental_mode_send'] else "FULL_TABLE"
+        super().__init__(config, state, auth_stub, catalog)
+
+
     SCHEMA = with_properties({
         'CreatedDate': CREATED_DATE_FIELD,
         'CustomerKey': CUSTOMER_KEY_FIELD,
@@ -91,6 +102,10 @@ class ListSendDataAccessObject(DataAccessObject):
             'description': ('Indicates the number of unsubscribe events '
                             'associated with a send.'),
         },
+        'RetrieveDate': {
+            'type': ['null', 'string'],
+            'description': ('Indicates the date on which the data was retrieved.'),
+        }
     })
 
     TABLE = 'list_send'
@@ -157,5 +172,6 @@ class ListSendDataAccessObject(DataAccessObject):
             self.__class__.TABLE, FuelSDK.ET_ListSend, self.auth_stub, _filter)
 
         for list_send in stream:
+            list_send['RetrieveDate'] = datetime.now()
             list_send = self.filter_keys_and_parse(list_send)
             singer.write_records(table, [list_send])
