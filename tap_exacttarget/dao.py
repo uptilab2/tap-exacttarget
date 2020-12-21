@@ -38,7 +38,7 @@ class DataAccessObject():
             'stream': cls.TABLE,
             'key_properties': cls.KEY_PROPERTIES,
             'schema': cls.SCHEMA,
-            'replication_method': cls.REPLICATION_METHOD,
+            'replication_method': self.REPLICATION_METHOD,
             'metadata': metadata.to_list(mdata)
         }]
 
