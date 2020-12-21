@@ -16,7 +16,6 @@ LOGGER = singer.get_logger()
 
 class SendDataAccessObject(DataAccessObject):
     REPLICATION_METHOD = "FULL_TABLE"
-
     SCHEMA = with_properties({
         'CreatedDate': CREATED_DATE_FIELD,
         'EmailID': {
